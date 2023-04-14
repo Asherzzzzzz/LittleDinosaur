@@ -5,7 +5,6 @@ using namespace std;
 #include <windows.h>
 #include <conio.h> // keyboard input
 #include <fstream>
-
 #include <ctime>
 #include <cmath>
 #include <string>
@@ -55,10 +54,6 @@ using namespace std;
 
 // static value
 static int frame = 0;
-
-// start menu
-const vector<string> start_menu_button({ "  START  ", "  SKILL  ", "  EXIT GAME  " });
-const vector<string> start_menu_selected_button({ "> START <", "> SKILL <", "> EXIT GAME <" });
 
 
 class Barrier
@@ -123,6 +118,7 @@ struct dino
 	vector<Barrier*> barriers;
 
 	int score = 0;
+	int highest_score = 0;
 
 	int barrier_chance = DEFAULT_BARRIER_CHANCE;
 	int barrier_cold_time = 0;
@@ -138,7 +134,23 @@ struct dino
 	int jump_power_left = 0;
 };
 typedef dino Dino;
-static Dino* m_dino = new Dino();//how to make it inside the struct
+static Dino* m_dino = new Dino();
+
+struct ui
+{
+	// start_menu
+	const vector<string> start_menu_button = { "  START  ", "  SKILL  ", "  EXIT GAME  " };
+	const vector<string> start_menu_selected_button = { "> START <", "> SKILL <", "> EXIT GAME <" };
+	// game_over_menu
+	const vector<string> game_over_menu_button = { "  BACK TO MENU  " };
+	const vector<string> game_over_menu_selected_button = { "> BACK TO MENU <" };
+
+
+	int cursor_pos_index = 0;
+	bool flag = false;
+};
+typedef ui UI;
+static UI* m_ui = new UI();
 
 
 #pragma region other functions
@@ -150,13 +162,21 @@ bool execute_per_frame(int frequency, void (*op)(void));
 inline string str_repeat(int count, string str);
 inline void print_at(short x, short y, string str, bool reset_cursor_pos = true);
 inline void print_at_center(short x, short y, string str, bool reset_cursor_pos = true);
+void console_clear();
 #pragma endregion
 
 int key_pressed();
 
-#pragma region Dino
+
 // initialization
 void init(void);
+
+// score
+void score_reset();
+void score_increase();
+void score_record_update();
+string score_print();
+string highest_score_print();
 
 // dinosaur movement
 void dino_jump();
@@ -175,10 +195,15 @@ void barrier_map_move();
 void read_previous_record();
 void save_record();
 
-// display
-int start_menu_display();
-
-// game start setting, ui...
+//UI
+void cursor_pos_index_initialize();
+// start_menu
+void start_menu_initialize();
+int start_menu_button_select();
+void start_menu_animation();
+// game
 void console_display();
-int game_over_menu_display();
-#pragma endregion
+// game_over
+void game_over_menu_initialize();
+int game_over_menu_button_select();
+void game_over_menu_animation();

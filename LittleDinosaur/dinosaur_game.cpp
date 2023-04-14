@@ -59,6 +59,11 @@ inline void print_at_center(short x, short y, string str, bool reset_cursor_pos)
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 0 });
 	}
 }
+
+void console_clear()
+{
+	system("cls");
+}
 #pragma endregion
 
 int key_pressed()
@@ -129,6 +134,48 @@ void init()// set default value
 				m_dino->barrier_map[i].push_back('\0');
 			}
 		}
+	}
+}
+
+void score_reset()
+{
+	m_dino->score = 0;
+}
+
+void score_increase()
+{
+	++m_dino->score;
+}
+
+void score_record_update()
+{
+	if (m_dino->score > m_dino->highest_score)
+	{
+		m_dino->highest_score = m_dino->score;
+	}
+}
+
+string score_print()
+{
+	if (m_dino->score == 0)
+	{
+		return str_repeat(5, "0");
+	}
+	else
+	{
+		return str_repeat(5 - (int)log10(m_dino->score) - 1, "0") + to_string(m_dino->score);
+	}
+}
+
+string highest_score_print()
+{
+	if (m_dino->highest_score == 0)
+	{
+		return str_repeat(5, "0");
+	}
+	else
+	{
+		return str_repeat(5 - (int)log10(m_dino->highest_score) - 1, "0") + to_string(m_dino->highest_score);
 	}
 }
 
@@ -297,60 +344,79 @@ void save_record()
 }
 
 #pragma region UI
-int start_menu_display()
+void cursor_pos_index_initialize()
 {
-	system("cls");
+	m_ui->cursor_pos_index = 0;
+}
+
+void start_menu_initialize()
+{
+	m_ui->flag = false;
+
 	// start printing from the (0,0) position of console
 	print_at(8, 2, str_repeat(MAP_LENGTH, "▌"));
 	print_at_center(8, 5, "LITTLE DINOSAUR");
-	for (int i = 0; i < start_menu_button.size(); i++)
+	for (int i = 0; i < m_ui->start_menu_button.size(); i++)
 	{
-		print_at_center(8, 7 + i, start_menu_button[i]);
+		print_at_center(8, 7 + i, m_ui->start_menu_button[i]);
 	}
-	print_at(8, 7 + (int)start_menu_button.size() + 2, str_repeat(MAP_LENGTH, "▌"));
+	print_at(8, 7 + (int)m_ui->start_menu_button.size() + 2, str_repeat(MAP_LENGTH, "▌"));
 
-	int cursor_pos_index = 0;
-	print_at_center(8, 7 + cursor_pos_index, start_menu_selected_button[cursor_pos_index]);
+	print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_selected_button[m_ui->cursor_pos_index]);
+}
 
-	int input_key;
-	while (true)
+int start_menu_button_select()
+{
+	switch (key_pressed())
 	{
-		input_key = key_pressed();
+	case UP:
+		if (m_ui->cursor_pos_index > 0)
+		{
+			print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_button[m_ui->cursor_pos_index]);
+			--m_ui->cursor_pos_index;
+			print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_selected_button[m_ui->cursor_pos_index]);
+		}
+		break;
 
-		if (input_key == UP)
+	case DOWN:
+		if (m_ui->cursor_pos_index < m_ui->start_menu_button.size() - 1)
 		{
-			if (cursor_pos_index > 0)
-			{
-				print_at_center(8, 7 + cursor_pos_index, start_menu_button[cursor_pos_index]);
-				--cursor_pos_index;
-				print_at_center(8, 7 + cursor_pos_index, start_menu_selected_button[cursor_pos_index]);
-			}
+			print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_button[m_ui->cursor_pos_index]);
+			++m_ui->cursor_pos_index;
+			print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_selected_button[m_ui->cursor_pos_index]);
 		}
-		else if (input_key == DOWN)
-		{
-			if (cursor_pos_index < start_menu_button.size() - 1)
-			{
-				print_at_center(8, 7 + cursor_pos_index, start_menu_button[cursor_pos_index]);
-				++cursor_pos_index;
-				print_at_center(8, 7 + cursor_pos_index, start_menu_selected_button[cursor_pos_index]);
-			}
-		}
-		else if (input_key == ENTER)
-		{
-			break;
-		}
+		break;
+
+	case ENTER:
+		return m_ui->cursor_pos_index;
+
+	default:
+		return -1;
 	}
 
-	system("cls");
+	return -1;
+}
 
-	return cursor_pos_index;
+void start_menu_animation()
+{
+	if (m_ui->flag)
+	{
+		print_at_center(8, 7 + m_ui->cursor_pos_index, m_ui->start_menu_selected_button[m_ui->cursor_pos_index]);
+
+		m_ui->flag = false;
+	}
+	else
+	{
+		print_at_center(8, 7 + m_ui->cursor_pos_index, str_repeat(MAP_LENGTH, " "));
+
+		m_ui->flag = true;
+	}
 }
 
 void console_display()
 {
 	// just execute once when the game start
 	
-
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 3 });
 
 	// top UI bar
@@ -383,22 +449,61 @@ void console_display()
 	}
 }
 
-int game_over_menu_display()
+void game_over_menu_initialize()
 {
-	system("cls");// clear
+	m_ui->flag = false;
 
-	cout << "\n\n";
-	cout << "\n\n\n\n\t";
-	cout << string(MAP_LENGTH / 2 - 5, ' ') << "▌▋▋-GAME OVER-";
+	print_at_center(8, 6, "▌▋▋-GAME OVER-");
 
-	cout << "\n\n\t";
-	if (m_dino->score != 0)
-		cout << string(MAP_LENGTH / 2 - 9, ' ') << "HIGHEST SCORE : " << string(5 - (int)log10(m_dino->score) - 1, '0') << m_dino->score;
+	print_at_center(8, 7, "SCORE : " + score_print());
+	print_at_center(8, 8, "HIGHEST SCORE : " + highest_score_print());
+}
+
+int game_over_menu_button_select()
+{
+	switch (key_pressed())
+	{
+	case UP:
+		if (m_ui->cursor_pos_index > 0)
+		{
+			print_at_center(8, 9 + m_ui->cursor_pos_index, m_ui->game_over_menu_button[m_ui->cursor_pos_index]);
+			--m_ui->cursor_pos_index;
+			print_at_center(8, 9 + m_ui->cursor_pos_index, m_ui->game_over_menu_selected_button[m_ui->cursor_pos_index]);
+		}
+		break;
+
+	case DOWN:
+		if (m_ui->cursor_pos_index < m_ui->game_over_menu_button.size() - 1)
+		{
+			print_at_center(8, 9 + m_ui->cursor_pos_index, m_ui->game_over_menu_button[m_ui->cursor_pos_index]);
+			++m_ui->cursor_pos_index;
+			print_at_center(8, 9 + m_ui->cursor_pos_index, m_ui->game_over_menu_selected_button[m_ui->cursor_pos_index]);
+		}
+		break;
+
+	case ENTER:
+		return m_ui->cursor_pos_index;
+
+	default:
+		return -1;
+	}
+
+	return -1;
+}
+
+void game_over_menu_animation()
+{
+	if (m_ui->flag)
+	{
+		print_at_center(8, 9 + m_ui->cursor_pos_index, m_ui->game_over_menu_selected_button[m_ui->cursor_pos_index]);
+
+		m_ui->flag = false;
+	}
 	else
-		cout << string(MAP_LENGTH / 2 - 9, ' ') << "HIGHEST SCORE : " << string(5, '0');
+	{
+		print_at_center(8, 9 + m_ui->cursor_pos_index, str_repeat(MAP_LENGTH, " "));
 
-	cout << "\n\n\n\n\t";
-
-	return 0;
+		m_ui->flag = true;
+	}
 }
 #pragma endregion

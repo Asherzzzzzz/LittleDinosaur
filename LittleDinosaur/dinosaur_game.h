@@ -112,7 +112,7 @@ public:
 struct dino 
 {
 	// from 0(underground) to SKY_HEIGHT
-	// when console_display, print it from the end to the begin
+	// when final_game_map_display, print it from the end to the begin
 	vector<char> map[MAP_HEIGHT];
 	vector<char> barrier_map[MAP_HEIGHT];
 	vector<Barrier*> barriers;
@@ -160,7 +160,9 @@ bool execute_per_frame(int frequency);
 bool execute_per_frame(int frequency, void (*op)(void));
 
 inline string str_repeat(int count, string str);
+inline void print_at(short x, short y, char str, bool reset_cursor_pos = true);
 inline void print_at(short x, short y, string str, bool reset_cursor_pos = true);
+inline void print_at_center(short x, short y, char str, bool reset_cursor_pos = true);
 inline void print_at_center(short x, short y, string str, bool reset_cursor_pos = true);
 void console_clear();
 #pragma endregion
@@ -202,7 +204,7 @@ void start_menu_initialize();
 int start_menu_button_select();
 void start_menu_animation();
 // game
-void console_display();
+void final_game_map_display();
 // game_over
 void game_over_menu_initialize();
 int game_over_menu_button_select();

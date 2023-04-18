@@ -38,9 +38,31 @@ inline string str_repeat(int count, string str)
 	return r;
 }
 
+inline void print_at(short x, short y, char str, bool reset_cursor_pos)
+{
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { x, y });
+	cout << str;
+
+	if (reset_cursor_pos)
+	{
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 0 });
+	}
+}
+
 inline void print_at(short x, short y, string str, bool reset_cursor_pos)
 {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { x, y });
+	cout << str;
+
+	if (reset_cursor_pos)
+	{
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 0 });
+	}
+}
+
+inline void print_at_center(short x, short y, char str, bool reset_cursor_pos)
+{
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { (short)(x + (MAP_LENGTH - 1) / 2), y });
 	cout << str;
 
 	if (reset_cursor_pos)
@@ -413,39 +435,34 @@ void start_menu_animation()
 	}
 }
 
-void console_display()
+void final_game_map_display()
 {
-	// just execute once when the game start
-	
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 3 });
-
 	// top UI bar
 	if (m_dino->score != 0)
-		cout << "\t" << string(MAP_LENGTH - 5, ' ') << string(5 - (int)log10(m_dino->score) - 1, '0') << m_dino->score;
+		print_at(8 + MAP_LENGTH - 5, 3, score_print());
 	else
-		cout << "\t" << string(MAP_LENGTH - 5, ' ') << string(5, '0');
+		print_at(8 + MAP_LENGTH - 5, 3, string(5, '0'));
 
 	cout << "\n\n\n\n\t";
 
 	// entire map
-	for (int i = MAP_HEIGHT - 1; i >= 0; i--)
+	for (int i = 0; i < MAP_HEIGHT; i++)
 	{
 		for (int j = 0; j < MAP_LENGTH; j++)
 		{
 			if (m_dino->pos_y == i - ROAD_SURFACE && m_dino->pos_x == j) // if y = -depth
 			{
-				cout << "R";
+				print_at(8 + j, 6 + MAP_HEIGHT - i, "R");
 			}
 			else if (m_dino->barrier_map[i][j] != '\0')
 			{
-				cout << m_dino->barrier_map[i][j];
+				print_at(8 + j, 6 + MAP_HEIGHT - i, m_dino->barrier_map[i][j]);
 			}
 			else
 			{
-				cout << m_dino->map[i][j];
+				print_at(8 + j, 6 + MAP_HEIGHT - i, m_dino->map[i][j]);
 			}
 		}
-		cout << "\n\t";
 	}
 }
 

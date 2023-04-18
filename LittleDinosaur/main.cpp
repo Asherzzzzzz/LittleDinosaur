@@ -33,7 +33,15 @@ inline void game_process()
     print_at(8, 2, str_repeat(MAP_LENGTH / 2, "▌ "));
     print_at(8, 7 + MAP_HEIGHT + 1, str_repeat(MAP_LENGTH / 2, "▌ "));
 
-    console_display();
+    final_game_map_display();
+
+    //delay
+    for (int i = 3; i > 0; i--)
+    {
+        print_at_center(8, 5 + MAP_HEIGHT / 2, to_string(i));
+        Sleep(1000);
+    }
+    print_at_center(8, 5 + MAP_HEIGHT / 2, " ");
 
     while (true)
     {
@@ -56,7 +64,7 @@ inline void game_process()
             break;
         }
 
-        console_display();
+        final_game_map_display();
 
         execute_per_frame(4, score_increase);
 

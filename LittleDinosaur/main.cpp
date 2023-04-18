@@ -27,12 +27,7 @@ inline int game_over_menu_process()
 
 inline void game_process()
 {
-    console_clear();
     score_reset();
-
-    print_at(8, 2, str_repeat(MAP_LENGTH / 2, "▌ "));
-    print_at(8, 7 + MAP_HEIGHT + 1, str_repeat(MAP_LENGTH / 2, "▌ "));
-
     final_game_map_display();
 
     //delay

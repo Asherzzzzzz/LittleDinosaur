@@ -437,33 +437,41 @@ void start_menu_animation()
 
 void final_game_map_display()
 {
+	console_clear();
+
+	print_at(8, 2, str_repeat(MAP_LENGTH / 2, "▌ "));
+	print_at(8, 7 + MAP_HEIGHT + 1, str_repeat(MAP_LENGTH / 2, "▌ "));
+
 	// top UI bar
 	if (m_dino->score != 0)
 		print_at(8 + MAP_LENGTH - 5, 3, score_print());
 	else
 		print_at(8 + MAP_LENGTH - 5, 3, string(5, '0'));
 
-	cout << "\n\n\n\n\t";
-
 	// entire map
 	for (int i = 0; i < MAP_HEIGHT; i++)
 	{
 		for (int j = 0; j < MAP_LENGTH; j++)
 		{
-			if (m_dino->pos_y == i - ROAD_SURFACE && m_dino->pos_x == j) // if y = -depth
-			{
-				print_at(8 + j, 6 + MAP_HEIGHT - i, "R");
-			}
-			else if (m_dino->barrier_map[i][j] != '\0')
-			{
-				print_at(8 + j, 6 + MAP_HEIGHT - i, m_dino->barrier_map[i][j]);
-			}
-			else
+			if (m_dino->map[i][j] != ' ')
 			{
 				print_at(8 + j, 6 + MAP_HEIGHT - i, m_dino->map[i][j]);
 			}
 		}
 	}
+
+	for (int i = 0; i < MAP_HEIGHT; i++)
+	{
+		for (int j = 0; j < MAP_LENGTH; j++)
+		{
+			if (m_dino->barrier_map[i][j] != '\0')
+			{
+				print_at(8 + j, 6 + MAP_HEIGHT - i, m_dino->barrier_map[i][j]);
+			}
+		}
+	}
+
+	print_at(8 + m_dino->pos_x, 6 + MAP_HEIGHT - m_dino->pos_y - ROAD_SURFACE, "R");
 }
 
 void game_over_menu_initialize()
